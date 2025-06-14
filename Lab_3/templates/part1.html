@@ -1,0 +1,392 @@
+<!-- 
+index.html
+Головна сторінка сайту. Виводить список фігурок із першої частини фільму
+-->
+
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>DragonCollect</title>
+    <style>
+        /* Основне оформлення */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* Блок заголовка з зображенням */
+        .header {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Зображення Беззубика */
+        .header img {
+            width: 100%;
+            height: 33vh; /* не більше 1/3 висоти вікна */
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Титульний текст */
+        .title-overlay {
+            position: absolute;
+            top: 20%;
+            left: 5%;
+            color: white;
+        }
+
+        /* Назва сайту */
+        .title-overlay h1 {
+            font-size: 3vw;
+            margin: 0;
+        }
+
+        /* Підзаголовок */
+        .title-overlay p {
+            font-size: 1.2vw;
+            margin-top: 10px;
+            color: #ddd;
+        }
+
+        /* Кнопки фільтрів */
+        .filters {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .filters button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filters .active {
+            background-color: #333;
+            color: white;
+        }
+
+        /* Сітка карток */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 0 30px 40px;
+        }
+
+
+
+
+        .card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+
+
+        /* Картка */
+        .card {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Картинка фігурки */
+        .img-placeholder {
+            width: 100%;
+            height: 150px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        /* Футер */
+        footer {
+            text-align: right;
+            padding: 20px 30px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* Адаптивний розмір тексту */
+        @media (max-width: 768px) {
+            .title-overlay h1 {
+                font-size: 6vw;
+            }
+            .title-overlay p {
+                font-size: 3vw;
+            }
+        }
+
+        .login-box {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10;
+        }
+        .login-box button {
+            padding: 4px 8px;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+
+
+
+
+
+<body>
+    <!-- Блок з фото і заголовком -->
+    <div class="header">
+        <img src="static\main_img\toothless.jpg" alt="Toothless">
+        <div class="title-overlay">
+            <h1>DragonCollect</h1>
+            <p>for the sake of collecting figurines from the movie</p>
+        </div>
+
+        <!-- 🔐 Авторизація праворуч угорі -->
+        <div class="login-box">
+        {% if request.session.user %}
+            {% if request.session.user.is_admin %}
+              👑 {{ request.session.user.username }} |
+              <a href="/manage_users">👥 Керувати користувачами</a> |
+            {% else %}
+                👤 {{ request.session.user.username }} |
+            {% endif %}
+            | <a href="/logout">вийти</a>
+        {% else %}
+            <a href="/login">Увійти</a> | <a href="/register">Зареєструватись</a>
+        {% endif %}
+        </div>
+    </div>
+
+    <!-- Фільтр по частинах -->
+    <div class="filters">
+        <a href="/part1"><button class="active">Частина 1</button></a>
+        <a href="/part2"><button>Частина 2</button></a>
+        <a href="/part3"><button>Частина 3</button></a>
+        <a href="/"><button>Фільм 1</button></a>
+    </div>
+
+    {% if request.session.user and request.session.user.is_admin %}
+        <div style="text-align: center; margin: 20px;">
+            <a href="/create_form">
+                <button style="padding: 10px 20px; font-size: 16px;">➕ Додати фігурку</button>
+            </a>
+        </div>
+    {% endif %}
+
+
+
+    <!-- Сітка з картками -->
+    <div class="grid" id="gallery"></div>
+
+  <!-- Скрипт динамічної генерації карток -->
+    <div class="grid" id="gallery">
+    {% for fig in figures %}
+    <div class="card">
+        <img src="{{ fig.img_url }}" alt="{{ fig.name }}"
+            style="width: 100%; height: 200px; object-fit: cover;"
+            onmouseenter="this.src='{{ fig.hover_img_url }}'"
+            onmouseleave="this.src='{{ fig.img_url }}'">
+        <p>{{ fig.name }}</p>
+
+        {% if request.session.user and request.session.user.is_admin %}
+            <a href="/edit/{{ fig.id }}">
+                <button>✏ Редагувати</button>
+            </a>
+        {% endif %}
+
+
+        <label>
+            <input type="checkbox"
+                    {% if owned_map.get(fig.id) == True %}checked{% endif %}
+                    onchange="toggleOwned({{ fig.id }}, this)">
+            Маю
+        </label>
+
+
+        <label>
+            <input type="checkbox"
+                    {% if owned_map.get(fig.id) == False %}checked{% endif %}
+                    onchange="toggleOwned({{ fig.id }}, this)">
+            Не маю
+        </label>
+
+        {% if request.session.user and request.session.user.is_admin %}
+            <form action="/delete/{{ fig.id }}" method="post" style="margin-top: 10px;">
+                <button type="submit" onclick="return confirm('Ви впевнені, що хочете видалити фігурку?')">🗑 Видалити</button>
+            </form>
+        {% endif %}
+
+
+        
+    </div>
+    {% endfor %}
+    </div>
+
+
+
+
+
+
+
+    <!-- Статистика -->
+    <h2>Статистика моєї колекції</h2>
+    <table border="1" cellpadding="8" cellspacing="0" style="margin: 0 auto; text-align: center;">
+        <tr>
+            <th>Усього фігурок</th>
+            <th>Маю</th>
+            <th>Ще залишилось знайти</th>
+        </tr>
+        <tr>
+            <td id="total">0</td>
+            <td id="owned">0</td>
+            <td id="missing">0</td>
+        </tr>
+    </table>
+
+
+     <div style="height: 100px;"></div>
+
+
+    <script>
+        function updateStats() {
+            const cards = document.querySelectorAll('.card');
+            const total = cards.length;
+            let owned = 0;
+
+            cards.forEach(card => {
+                const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+                if (checkboxes[0].checked) {
+                    owned++;
+                }
+            });
+
+            document.getElementById('total').textContent = total;
+            document.getElementById('owned').textContent = owned;
+            document.getElementById('missing').textContent = total - owned;
+        }
+
+
+
+
+
+
+        // Виклик одразу
+        updateStats();
+
+        // Обробник змін чекбоксів
+        document.querySelectorAll('.card input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                // Логіка: якщо один активний — інший вимикається
+                const row = cb.closest('.card');
+                const boxes = row.querySelectorAll('input[type="checkbox"]');
+
+                if (cb === boxes[0] && cb.checked) {
+                    boxes[1].checked = false;
+                } else if (cb === boxes[1] && cb.checked) {
+                    boxes[0].checked = false;
+                }
+
+                updateStats();
+            });
+        });
+    </script>
+
+
+
+
+
+     <div style="height: 120px;"></div>
+
+    <!-- Списки -->
+    <h2>Чому варто використовувати DragonCollect</h2>
+    <ul>
+        <li>Швидкий пошук фігурок</li>
+        <li>Порівняння схожих моделей</li>
+        <li>Фільтрація за частинами мультфільму</li>
+    </ul>
+
+    <ol>
+        <li>Вибери частину мультфільму</li>
+        <li>Знайди свою фігурку</li>
+        <li>Відміть, що маєш</li>
+    </ol>
+
+
+     <div style="height: 120px;"></div>
+
+
+
+
+
+
+
+    <!-- Посилання на сторінку з описом -->
+    <h2>Докладніше про сайт</h2>
+    <div class="footer-links">
+        <p>Потрібна допомога? <a href="/support.html">Перейти до служби підтримки</a></p>
+        <p>Опис предметної галузі та бізнес-логіки — <a href="/about.html">перейти на сторінку</a>.</p>
+    </div>
+
+
+
+    <!-- //Футер -->
+    <footer>© 2025</footer>
+
+</body>
+</html>
+
+
+<script>
+  function toggleOwned(figureId, changedBox) {
+    const card = changedBox.closest('.card');
+    const checkboxes = card.querySelectorAll('input[type="checkbox"]');
+
+    // Заборонити одночасне ввімкнення обох
+    checkboxes.forEach(cb => {
+      if (cb !== changedBox) cb.checked = !changedBox.checked;
+    });
+
+    // Визначення нового статусу (true = маю)
+    const owned = changedBox.checked && changedBox.nextSibling.nodeValue.trim() === "Маю";
+
+    fetch(`/toggle_owned/${figureId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ owned: owned })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        alert("Помилка при оновленні!");
+        changedBox.checked = !changedBox.checked; // повертаємо назад
+      }
+    })
+    .catch(() => {
+      alert("Проблема із сервером.");
+      changedBox.checked = !changedBox.checked;
+    });
+  }
+</script>
