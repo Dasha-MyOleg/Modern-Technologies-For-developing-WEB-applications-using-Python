@@ -59,8 +59,15 @@ support.html
         }
     </style>
 </head>
+
 <body>
     <h1>Служба підтримки DragonCollect</h1>
+
+    {% if sent %}
+    <p class="success" style="color: green; text-align: center; font-weight: bold;">
+        Дякуємо! Ваше повідомлення надіслано.
+    </p>
+    {% endif %}
 
     <form action="#" method="post">
         <label for="name">Ім’я:</label>

@@ -1,0 +1,57 @@
+<!-- templates/feedbacks.html -->
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Повідомлення служби підтримки</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+        .message {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+        .message h3 {
+            margin: 0;
+            color: #333;
+        }
+        .message p {
+            margin: 0.2rem 0;
+        }
+        .message small {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Отримані повідомлення служби підтримки</h1>
+
+    {% if feedbacks %}
+        {% for item in feedbacks %}
+        <div class="message">
+            <form action="/delete-feedback" method="post" style="float: right;" onsubmit="return confirm('Ви впевнені, що хочете видалити це повідомлення?');">
+                <input type="hidden" name="id" value="{{ item._id }}">
+                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Видалити</button>
+            </form>
+            <h3>{{ item.name }}</h3>
+            <small>{{ item.email }}</small>
+            <p>{{ item.message }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="text-align: center; color: gray;">Немає повідомлень</p>
+    {% endif %}
+</body>
+</html>
+

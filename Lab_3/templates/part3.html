@@ -168,12 +168,13 @@ index.html
         <div class="login-box">
         {% if request.session.user %}
             {% if request.session.user.is_admin %}
-              👑 {{ request.session.user.username }} |
-              <a href="/manage_users">👥 Керувати користувачами</a> |
+                👑 {{ request.session.user.username }} |
+                <a href="/manage_users">👥 Керувати користувачами</a> |
+                <a href="/feedbacks">💬 Повідомлення</a> |
             {% else %}
                 👤 {{ request.session.user.username }} |
             {% endif %}
-            | <a href="/logout">вийти</a>
+            <a href="/logout">вийти</a>
         {% else %}
             <a href="/login">Увійти</a> | <a href="/register">Зареєструватись</a>
         {% endif %}

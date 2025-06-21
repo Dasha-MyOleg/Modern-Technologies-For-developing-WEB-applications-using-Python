@@ -12,6 +12,15 @@ from fastapi import Body
 from starlette.middleware.sessions import SessionMiddleware
 from models import User
 from models import Part, Figure, User, UserFigure
+from fastapi import Form
+from fastapi.responses import RedirectResponse
+from mongodb import support_collection
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from bson import ObjectId
+from fastapi import Form
+
 
 
 app = FastAPI(title="DragonCollect", description="Фігурки з мультфільму", version="1.0")
@@ -539,10 +548,54 @@ def update_figure(
 @app.get(
     "/support.html",
     summary="Служба підтримки",
-    description="Відображає HTML-сторінку з інформацією про підтримку для користувачів застосунку."
+    description="Відображає HTML-сторінку з формою підтримки"
 )
 def support_page(request: Request):
-    return templates.TemplateResponse("support.html", {"request": request})
+    sent = request.query_params.get("sent") == "true"
+    return templates.TemplateResponse("support.html", {"request": request, "sent": sent})
+
+
+@app.post(
+    "/support.html",
+    summary="Надіслати повідомлення до служби підтримки",
+    description="Отримує дані з форми підтримки (ім'я, email, повідомлення) та зберігає їх у MongoDB."
+)
+async def submit_support_form(
+    request: Request,
+    name: str = Form(...),
+    email: str = Form(...),
+    message: str = Form(...)
+):
+    # створення об'єкта документа
+    support_entry = {
+        "name": name,
+        "email": email,
+        "message": message
+    }
+
+    # зберігання в MongoDB
+    support_collection.insert_one(support_entry)
+
+    # інфа, що повідомлення надіслано
+    return RedirectResponse(url="/support.html?sent=true", status_code=303)
+
+
+
+
+@app.get("/feedbacks", response_class=HTMLResponse)
+def view_feedbacks(request: Request):
+    feedbacks = list(support_collection.find())
+    return templates.TemplateResponse("feedbacks.html", {
+        "request": request,
+        "feedbacks": feedbacks
+    })
+
+
+@app.post("/delete-feedback")
+def delete_feedback(id: str = Form(...)):
+    support_collection.delete_one({"_id": ObjectId(id)})
+    return RedirectResponse(url="/feedbacks", status_code=303)
+
 
 
 @app.get(
