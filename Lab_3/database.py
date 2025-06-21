@@ -5,12 +5,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # URL бази даних SQLite
-SQLALCHEMY_DATABASE_URL = "sqlite:///./figurines.db"
+SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://postgres:2684@localhost:5432/dragoncollect"
 
 # Створення рушія бази даних
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 # Створення сесії для взаємодії з базою даних
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

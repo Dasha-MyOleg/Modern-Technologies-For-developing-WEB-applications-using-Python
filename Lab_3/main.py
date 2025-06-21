@@ -552,3 +552,12 @@ def support_page(request: Request):
 )
 def about_page(request: Request):
     return templates.TemplateResponse("about.html", {"request": request})
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
+
+@app.get("/test-db")
+def test_db(db: Session = Depends(get_db)):
+    return {"figures": db.query(Figure).count()}
