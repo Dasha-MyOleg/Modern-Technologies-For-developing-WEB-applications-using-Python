@@ -1,0 +1,47 @@
+<!-- 
+edit_figure.html
+Форма для редагування даних про фігурку: назва, зображення, частина фільму, позначка "маю"
+-->
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Редагувати фігурку</title>
+</head>
+<body>
+  <h1>Редагувати фігурку</h1>
+
+  <form action="/update/{{ figure.id }}" method="post">
+    {% csrf_token %}
+
+    <label>Назва фігурки:</label><br>
+    <input type="text" name="name" value="{{ figure.name }}" required><br><br>
+
+    <label>Зображення (URL):</label><br>
+    <input type="text" name="img_url" value="{{ figure.img_url }}" required><br><br>
+
+    <label>Hover-зображення (URL):</label><br>
+    <input type="text" name="hover_img_url" value="{{ figure.hover_img_url }}" required><br><br>
+
+    <label>Частина фільму:</label><br>
+    <select name="part_id">
+      {% for part in parts %}
+      <option value="{{ part.id }}" {% if figure.part_id == part.id %}selected{% endif %}>
+        {{ part.title }}
+      </option>
+      {% endfor %}
+    </select><br><br>
+
+    <label>Маю:</label>
+    <input type="checkbox" name="owned" {% if figure.owned %}checked{% endif %}><br><br>
+
+    <button type="submit">💾 Зберегти</button>
+  </form>
+
+  <br>
+  <a href="/">⬅ Назад до списку</a>
+</body>
+</html>

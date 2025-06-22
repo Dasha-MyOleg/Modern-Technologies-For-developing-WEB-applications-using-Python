@@ -1,0 +1,28 @@
+<!-- 
+login.html
+Сторінка форми входу до системи: введення логіна та пароля
+-->
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Вхід</title>
+</head>
+<body>
+    <h2>Вхід до системи</h2>
+    <form method="post" action="/login">
+        {% csrf_token %}
+        <label>Логін: <input type="text" name="username"></label><br><br>
+        <label>Пароль: <input type="password" name="password"></label><br><br>
+        <button type="submit">Увійти</button>
+    </form>
+</body>
+</html>
+
+
+
+<br>
+<a href="{% url 'index' %}">← На головну</a>

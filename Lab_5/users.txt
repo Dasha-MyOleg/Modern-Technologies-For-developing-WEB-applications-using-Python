@@ -1,0 +1,2 @@
+user | user234 | user
+admin | admin123 | admin
